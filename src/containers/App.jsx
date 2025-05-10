@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import * as tf from "@tensorflow/tfjs";
+import { loadLayersModel } from "@tensorflow/tfjs-layers";
 import gaussian from "gaussian";
 
 import ImageCanvas from "../components/ImageCanvas";
@@ -11,7 +12,7 @@ import "./App.css";
 
 import encodedData from "../encoded.json";
 
-const MODEL_PATH = "models/generatorjs/model.json";
+const MODEL_PATH = process.env.PUBLIC_URL + "/models/generatorjs/model.json";
 
 class App extends Component {
   constructor(props) {
@@ -24,28 +25,51 @@ class App extends Component {
       model: null,
       digitImg: tf.zeros([28, 28]),
       mu: 0,
-      sigma: 0
+      sigma: 0,
+      error: null
     };
   }
 
   componentDidMount() {
-    tf
-      .loadModel(MODEL_PATH)
-      .then(model => this.setState({ model }))
-      .then(() => this.getImage())
-      .then(digitImg => this.setState({ digitImg }));
+    loadLayersModel(MODEL_PATH)
+      .then(model => {
+        console.log("Model loaded successfully");
+        this.setState({ model });
+        return this.getImage();
+      })
+      .then(digitImg => {
+        console.log("Image generated successfully");
+        this.setState({ digitImg });
+      })
+      .catch(error => {
+        console.error("Error loading model:", error);
+        this.setState({ error: error.message });
+      });
   }
 
   async getImage() {
     const { model, mu, sigma } = this.state;
     const zSample = tf.tensor([[mu, sigma]]);
-    return model
-      .predict(zSample)
-      .mul(tf.scalar(255.0))
-      .reshape([28, 28]);
+    const output = model.predict(zSample);
+    const img = output.mul(tf.scalar(255.0)).reshape([28, 28]);
+    // Debug: print min/max values
+    output.data().then(data => {
+      console.log('Model output range:', Math.min(...data), Math.max(...data));
+    });
+    return img;
   }
 
   render() {
+    if (this.state.error) {
+      return (
+        <div className="App">
+          <h1>Error Loading Model</h1>
+          <p>{this.state.error}</p>
+          <p>Please make sure the model files are in the correct location: {MODEL_PATH}</p>
+        </div>
+      );
+    }
+
     return this.state.model === null ? (
       <div>Loading, please wait</div>
     ) : (

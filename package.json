@@ -12,7 +12,8 @@
     "deploy": "gh-pages -d build"
   },
   "dependencies": {
-    "@tensorflow/tfjs": "^0.9.1",
+    "@tensorflow/tfjs": "1.7.4",
+    "@tensorflow/tfjs-layers": "1.7.4",
     "d3": "^5.1.0",
     "gaussian": "^1.1.0",
     "prop-types": "^15.6.1",
@@ -21,13 +22,22 @@
     "react-scripts": "5.0.1"
   },
   "devDependencies": {
-    "eslint": "^4.19.1",
-    "eslint-config-airbnb": "^16.1.0",
+    "eslint": "^8.57.1",
     "eslint-config-prettier": "^2.9.0",
-    "eslint-plugin-import": "^2.11.0",
-    "eslint-plugin-jsx-a11y": "^6.0.3",
-    "eslint-plugin-react": "^7.7.0",
+    "eslint-config-react-app": "^7.0.1",
     "gh-pages": "^1.1.0",
     "prettier": "^1.12.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
