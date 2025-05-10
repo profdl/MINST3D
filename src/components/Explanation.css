@@ -1,23 +1,51 @@
 .textbox {
-  border: 1px solid black;
-  border-radius: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   background-color: white;
-  margin-top: 20px;
+  margin-bottom: 20px;
+  overflow: hidden;
 }
 
-.textbox>.header {
-  border-top-right-radius: 10px;
-  border-top-left-radius: 10px;
-  padding-left: 20px;
-  padding-right: 20px;
-  background-color: #d9d9d9;
+.textbox > .header {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
 }
 
-.textbox>.header h2{
-  margin-top: 0;
+.textbox > .header h2 {
+  margin: 0;
+  font-size: 1.2em;
+  color: #333;
 }
 
 .textbox .content {
-  padding-left: 20px;
-  padding-right: 20px;
+  padding: 15px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #444;
+}
+
+.textbox .content p {
+  margin: 0 0 15px 0;
+}
+
+.textbox .content a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.textbox .content a:hover {
+  text-decoration: underline;
+}
+
+.textbox .content code {
+  display: block;
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-x: auto;
+  margin: 10px 0;
 }

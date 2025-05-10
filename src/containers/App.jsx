@@ -18,6 +18,10 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.getImage = this.getImage.bind(this);
+    this.toggleDrawer = this.toggleDrawer.bind(this);
+    this.handleClickOutside = this.handleClickOutside.bind(this);
+    this.drawerRef = React.createRef();
+    this.helpButtonRef = React.createRef();
 
     this.norm = gaussian(0, 1);
 
@@ -26,7 +30,8 @@ class App extends Component {
       digitImg: tf.zeros([28, 28]),
       mu: 0,
       sigma: 0,
-      error: null
+      error: null,
+      isDrawerOpen: false
     };
   }
 
@@ -45,6 +50,21 @@ class App extends Component {
         console.error("Error loading model:", error);
         this.setState({ error: error.message });
       });
+
+    document.addEventListener('mousedown', this.handleClickOutside);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('mousedown', this.handleClickOutside);
+  }
+
+  handleClickOutside(event) {
+    if (this.state.isDrawerOpen && 
+        this.drawerRef.current && 
+        !this.drawerRef.current.contains(event.target) && 
+        !this.helpButtonRef.current.contains(event.target)) {
+      this.setState({ isDrawerOpen: false });
+    }
   }
 
   async getImage() {
@@ -52,11 +72,13 @@ class App extends Component {
     const zSample = tf.tensor([[mu, sigma]]);
     const output = model.predict(zSample);
     const img = output.mul(tf.scalar(255.0)).reshape([28, 28]);
-    // Debug: print min/max values
-    output.data().then(data => {
-      console.log('Model output range:', Math.min(...data), Math.max(...data));
-    });
     return img;
+  }
+
+  toggleDrawer() {
+    this.setState(prevState => ({
+      isDrawerOpen: !prevState.isDrawerOpen
+    }));
   }
 
   render() {
@@ -74,37 +96,57 @@ class App extends Component {
       <div>Loading, please wait</div>
     ) : (
       <div className="App">
-        <h1>VAE Latent Space Explorer</h1>
-        <div className="ImageDisplay">
-          <ImageCanvas
-            width={500}
-            height={500}
-            imageData={this.state.digitImg}
-          />
+        <div className="header">
+          <h1>VAE Latent Space Explorer</h1>
+          <button 
+            ref={this.helpButtonRef}
+            className="help-button" 
+            onClick={this.toggleDrawer}
+          >
+            ?
+          </button>
         </div>
 
-        <div className="ChartDisplay">
-          <XYPlot
-            data={encodedData}
-            width={500 - 10 - 10}
-            height={500 - 20 - 10}
-            xAccessor={d => d[0]}
-            yAccessor={d => d[1]}
-            colorAccessor={d => d[2]}
-            margin={{ top: 20, bottom: 10, left: 10, right: 10 }}
-            onHover={({ x, y }) => {
-              this.setState({ sigma: y, mu: x });
-              this.getImage().then(digitImg => this.setState({ digitImg }));
-            }}
-          />
+        <div className="main-content">
+          <div className="latent-space-container">
+            <XYPlot
+              data={encodedData}
+              width={window.innerWidth - 20}
+              height={window.innerHeight - 100}
+              xAccessor={d => d[0]}
+              yAccessor={d => d[1]}
+              colorAccessor={d => d[2]}
+              margin={{ top: 20, bottom: 10, left: 10, right: 10 }}
+              onHover={({ x, y }) => {
+                this.setState({ sigma: y, mu: x });
+                this.getImage().then(digitImg => this.setState({ digitImg }));
+              }}
+            />
+          </div>
+
+          <div className="digit-display">
+            <ImageCanvas
+              width={200}
+              height={200}
+              imageData={this.state.digitImg}
+            />
+            <div className="coordinates">
+              <p>Mu: {rounder(this.norm.cdf(this.state.mu), 3)}</p>
+              <p>Sigma: {rounder(this.norm.cdf(this.state.sigma), 3)}</p>
+            </div>
+          </div>
         </div>
-        <p>Mu: {rounder(this.norm.cdf(this.state.mu), 3)}</p>
-        <p>Sigma: {rounder(this.norm.cdf(this.state.sigma), 3)}</p>
-        <div className="Explanation">
+
+        <div 
+          ref={this.drawerRef}
+          className={`explanation-drawer ${this.state.isDrawerOpen ? 'open' : ''}`}
+        >
           <Explanation />
         </div>
 
-        <h5>Created by Taylor Denouden (April 2018)</h5>
+        <div className="footer">
+          <h5>Created by Taylor Denouden (April 2018)</h5>
+        </div>
       </div>
     );
   }
